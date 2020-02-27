@@ -8,28 +8,30 @@ class Job:
             self.__define_job(job_define)
             
     def __define_job(self,job):
-        self.__Type = isexists(job,'Type')
-        self.__AMI_ID = isexists(job,'AMI ID')
-        self.__Script = isexists(job,'Script')
-        self.__Timeout = isexists(job,'Timeout')
-        self.__Next = isexists(job,'Next')
-        self.__Function = isexists(job,'Function')
+        self.Type = isexists(job,'Type')
+        self.AMI_ID = isexists(job,'AMI ID')
+        self.Script = isexists(job,'Script')
+        self.Timeout = isexists(job,'Timeout')
+        self.Next = isexists(job,'Next')
+        self.Function = isexists(job,'Function')
         if job['Output']:
-            self.__Output = {}
-            self.__Output['prefix'] = job['Output']['prefix']
-            self.__Output['suffix'] = job['Output']['suffix']
+            self.Output = {}
+            self.Output['prefix'] = job['Output']['prefix']
+            self.Output['suffix'] = job['Output']['suffix']
 
-    def get_next(self):
-        return self.__Next
-    
-    def get_function(self):
-        return self.__Function
-    
-    def get_Type(self):
-        return self.__Type
-        
-    # def isright(self,obj,key):
-    #     if key in obj.keys():
-    #         return obj[key]
-    #     else:
-    #         return ""
+    def set_script(self,script_path):
+        self.Script_path = script_path
+
+    def set_function_type(self,type):
+        if type == 'py':
+            self.Function_type = 'python'
+        elif type == 'js':
+            self.Function_type = 'nodejs'
+        elif type == 'jar':
+            self.Function_type = 'java'
+        elif type == 'rb':
+            self.Function_type = 'ruby'
+        elif type == 'go':
+            self.Function_type = 'go'
+        else:
+            self.Function_type = 'undefine'

@@ -1,0 +1,42 @@
+{
+    "JOB": {
+        "A": {
+            "Type": "Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
+            "Timeout": 300,
+            "Next": [
+                "B"
+            ],
+            "Function": "SINGLE",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "B": {
+            "Type": "Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
+            "Timeout": 300,
+            "Next": [
+                "C"
+            ],
+            "Function": "SINGLE",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "C": {
+            "Type": "Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
+            "Timeout": 300,
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        }
+    }
+}

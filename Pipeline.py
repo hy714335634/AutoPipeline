@@ -1,6 +1,7 @@
 # Pipeline.py
 import json
 import os
+import shutil
 from .GraphDAG import *
 from .Job import *
 from .Datacheck import isexists
@@ -30,6 +31,7 @@ class Pipeline:
             self.__define_pipeline(json.loads(config_json))
         else:
             print("Can't find this config file %s" % self.config_file)
+        self.__graph_dag()
         
     def __define_pipeline(self,config):
         '''
@@ -48,13 +50,36 @@ class Pipeline:
     def say(self):
         print(self.Graph.dot.body)
 
-    def graph_dag(self):
+    def start(self,type=None):
+        if type == 'build':
+            self.__build()
+        else:return 0
+
+    def __build(self):
+        self.__load_script()
+        return 0
+
+    def __load_script(self):
+        script_path = self.project_path + '/' + self.project_name + '/Script/'
+        if not os.path.exists(script_path):
+            os.mkdir(script_path)
+        for job_name,job_define in self.__JOB.items():
+            script_name = job_define.Script
+            script_target_path = script_path + '/' + job_name + '.' + script_name.split('.')[-1]
+            if script_name:
+                shutil.copyfile(job_define.Script,script_target_path)
+                self.__JOB[job_name].set_script(script_target_path)
+                self.__JOB[job_name].set_function_type(script_name.split('.')[-1])
+
+        return 0
+
+    def __graph_dag(self):
         '''
         开始绘制DAG
         '''
         print("Build DAG...")
         self.__graph_main()
-        if self.__pipeline["INPUT"]["prefix"] or self.__pipeline["INPUT"]["suffix"]:
+        if isexists(isexists(self.__pipeline,"INPUT"),"prefix") or isexists(isexists(self.__pipeline,"INPUT"),"suffix"):
             self.__graph_pre_invoke()
         self.__graph_invoke()
         self.Graph.dot_render()
@@ -66,9 +91,9 @@ class Pipeline:
             main_p.attr(label='Stepfunctions pipeline')
             for job_name,job_define in self.__JOB.items():
                 # self.Graph.add_node(job_name)
-                if job_define.get_next():
-                    for next_node in job_define.get_next():
-                        main_p.edge(job_name,next_node,job_define.get_function())
+                if job_define.Next:
+                    for next_node in job_define.Next:
+                        main_p.edge(job_name,next_node,job_define.Function)
                 else:
                     main_p.edge(job_name,"END")
         
@@ -81,7 +106,7 @@ class Pipeline:
             invoke_p.edge("EC2 Job","Lambda CallBack")
             for job_name,job_define in self.__JOB.items():
                 # self.Graph.add_node(job_name)
-                if job_define.get_Type() == "Lambda":
+                if job_define.Type == "Lambda":
                     invoke_p.edge(job_name,"Lambda Job")
                 else:
                     invoke_p.edge(job_name,"Lambda to invoke EC2")
@@ -103,7 +128,7 @@ class Pipeline:
 
     def __get_node_type(self):
         for node_name in self.__Node['Node_Name']:
-            if not self.__JOB[node_name].get_next():
+            if not self.__JOB[node_name].Next:
                 self.__Node['END'].append(node_name)
-            if self.__JOB[node_name].get_next() in self.__Node['START']:
-                self.__Node['START'].remove(self.__JOB[node_name].get_next())
+            if self.__JOB[node_name].Next in self.__Node['START']:
+                self.__Node['START'].remove(self.__JOB[node_name].Next)

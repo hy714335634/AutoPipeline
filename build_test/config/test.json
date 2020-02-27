@@ -1,0 +1,67 @@
+{
+    "JOB": {
+        "A": {
+            "Type":"EC2",
+            "AMI ID": "id-1230",
+            "Script": "/xx",
+            "Timeout": 300,
+            "Next": ["B"],
+            "Function": "MAP",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "B": {
+            "Type":"EC2",
+            "AMI ID": "id-1230",
+            "Script": "/xx",
+            "Timeout": 300,
+            "Next": ["C","E"],
+            "Function": "MAP",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "C": {
+            "Type":"Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/xx",
+            "Timeout": 300,
+            "Next": ["D"],
+            "Function": "SINGLE",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "D": {
+            "Type":"EC2",
+            "AMI ID": "id-1230",
+            "Script": "/xx",
+            "Timeout": 300,
+            "Function": "SINGLE",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "E": {
+            "Type":"Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/xx",
+            "Timeout": 300,
+            "Next": ["D"],
+            "Function": "SINGLE",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        }
+    },
+    "INPUT": {
+        "prefix": "xxxx",
+        "suffix": "yyyy"
+    }
+}
