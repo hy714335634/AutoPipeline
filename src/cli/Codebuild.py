@@ -1,5 +1,7 @@
 import json
-from .template.Stepfunctions import *
+import sys
+sys.path.append('../')
+from templates.Stepfunctions import *
 
 
 class Codebuild:

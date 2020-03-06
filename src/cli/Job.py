@@ -1,5 +1,5 @@
 # Job.py
-from .Datacheck import *
+from Datacheck import *
 
 class Job:
     def __init__(self, job_define=None):

@@ -3,10 +3,10 @@ import json
 import os
 import sys
 import shutil
-from .GraphDAG import *
-from .Job import *
-from .Datacheck import isexists
-from .Codebuild import *
+from GraphDAG import *
+from Job import *
+from Datacheck import *
+from Codebuild import *
 
 class Pipeline:
     '''
