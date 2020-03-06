@@ -1,10 +1,12 @@
 # Pipeline.py
 import json
 import os
+import sys
 import shutil
 from .GraphDAG import *
 from .Job import *
 from .Datacheck import isexists
+from .Codebuild import *
 
 class Pipeline:
     '''
@@ -16,7 +18,6 @@ class Pipeline:
         初始化项目信息
         处理config.json,并初始化GraphDAG对象
         '''
-
         self.project_name = isexists(project,"project_name")
         self.project_id = isexists(project,"project_id")
         self.project_path = isexists(project,"project_path")
@@ -25,17 +26,26 @@ class Pipeline:
         self.__JOB = {}
         self.__Node = {"START":[],"END":[],"Node_Name":[]}
         self.Graph = GraphDAG(self.project_name,self.project_id,self.project_path)
+        self.__load_config()
+        self.__graph_dag()
+        
+    def __load_config(self):
+        '''
+        解析配置文档并初始化相关对象
+        '''
         if os.path.exists(self.config_file):
             f = open(self.config_file,encoding="utf-8")
             config_json = f.read()
             self.__define_pipeline(json.loads(config_json))
         else:
             print("Can't find this config file %s" % self.config_file)
-        self.__graph_dag()
-        
+            sys.exit(0)
+
     def __define_pipeline(self,config):
         '''
         构造任务节点
+        __JOB['Node_Name']存储所有job对象
+        __Node存储头部和尾部节点
         '''
 
         for job_name,job_define in config["JOB"].items():
@@ -57,9 +67,15 @@ class Pipeline:
 
     def __build(self):
         self.__load_script()
+        self.cb = Codebuild(self.__JOB,self.__Node)
+        print(json.dumps(self.cb.generate_sfn()))
         return 0
 
     def __load_script(self):
+        '''
+        1、整理所有脚本
+        2、检查脚本类型
+        '''
         script_path = self.project_path + '/' + self.project_name + '/Script/'
         if not os.path.exists(script_path):
             os.mkdir(script_path)
@@ -85,6 +101,9 @@ class Pipeline:
         self.Graph.dot_render()
 
     def __graph_main(self):
+        '''
+        绘制主体任务依赖
+        '''
         with self.Graph.dot.subgraph(name = "cluster_stepfunctions_pipeline") as main_p:
             main_p.attr(color="blue")
             main_p.node_attr["style"] = "filled"
@@ -98,6 +117,9 @@ class Pipeline:
                     main_p.edge(job_name,"END")
         
     def __graph_invoke(self):
+        '''
+        如果整个流程存在输入输出，则绘制S3 trigger -> SQS -> Lambda -> SFN
+        '''
         with self.Graph.dot.subgraph(name = "cluster_invoke") as invoke_p:
             invoke_p.attr(color="yellow")
             invoke_p.attr(label="invoke job")
@@ -112,6 +134,9 @@ class Pipeline:
                     invoke_p.edge(job_name,"Lambda to invoke EC2")
     
     def __graph_pre_invoke(self):
+        '''
+        找出并绘制头部和尾部任务
+        '''
         self.__get_node_type()
         with self.Graph.dot.subgraph(name = "cluster_pre_invoke") as pre_invoke_p:
             pre_invoke_p.attr(color="purple")
@@ -127,6 +152,11 @@ class Pipeline:
             else:pre_invoke_p.edge("S3","SQS",)
 
     def __get_node_type(self):
+        '''
+        找出头部、尾部任务
+        __Node['START']存储头部任务
+        __Node['END']存储尾部任务
+        '''
         for node_name in self.__Node['Node_Name']:
             if not self.__JOB[node_name].Next:
                 self.__Node['END'].append(node_name)

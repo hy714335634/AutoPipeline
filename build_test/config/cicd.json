@@ -1,52 +1,53 @@
 {
     "JOB": {
-        "A": {
+        "任务信息获取": {
             "Type": "Lambda",
             "AMI ID": "id-1230",
             "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
             "Timeout": 300,
             "Next": [
-                "B"
+                "代码编译"
             ],
-            "Function": "SINGLE",
+            "Function": "MAP",
             "Output": {
                 "prefix": "xxxx",
                 "suffix": "yyyy"
             }
         },
-        "B": {
-            "Type": "Lambda",
+        "代码编译": {
+            "Type": "EC2",
             "AMI ID": "id-1230",
             "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
             "Timeout": 300,
             "Next": [
-                "C"
+                "代码测试及上传"
             ],
-            "Function": "SINGLE",
+            "Function": "MAP",
             "Output": {
                 "prefix": "xxxx",
                 "suffix": "yyyy"
             }
         },
-        "C": {
-            "Type": "Lambda",
-            "AMI ID": "id-1230",
-            "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
-            "Timeout": 300,
-            "Output": {
-                "prefix": "xxxx",
-                "suffix": "yyyy"
-            }
-        },
-        "D": {
-            "Type": "Lambda",
+        "代码测试及上传": {
+            "Type": "EC2",
             "AMI ID": "id-1230",
             "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
             "Timeout": 300,
             "Next": [
-                "C"
+                "代码部署"
             ],
-            "Function": "SINGLE",
+            "Function": "MAP",
+            "Output": {
+                "prefix": "xxxx",
+                "suffix": "yyyy"
+            }
+        },
+        "代码部署": {
+            "Type": "Lambda",
+            "AMI ID": "id-1230",
+            "Script": "/Users/qangz/Downloads/999.test/cloudformation/AutoServerless/helloworld.py",
+            "Timeout": 300,
+            "Function": "MAP",
             "Output": {
                 "prefix": "xxxx",
                 "suffix": "yyyy"

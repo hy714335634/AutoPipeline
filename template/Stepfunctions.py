@@ -1,4 +1,6 @@
 import json
+import sys
+from ..Datacheck import isexists
 
 class Stepfunctions:
     def __init__(self,comment,startAt):
@@ -9,45 +11,49 @@ class Stepfunctions:
 
     def add_job(self,job_name,type,params):
         if type == 'lambda':
-            return self.__lambda_job(job_name,iscallback=params['callback'])
+            job = self.__lambda_job(job_name=job_name,params=params)
+            self.__sfn['States'][job_name] = job
+            return self.__sfn
 
-    def __lambda_job(self,job_name="default",iscallback=None):
+    def __lambda_job(self,job_name="default",params=None):
+        # TODO function名字可能冲突或不规范
         job = {}
-        job["name"] = job_name
-        if iscallback:
-            job["script"] = json.loads('''
-            {
-                "调用 Lambda 函数": {
-                    "Type": "Task",
-                    "Resource": "arn:aws-cn:states:::lambda:invoke.waitForTaskToken",
-                    "Parameters": {
-                        "FunctionName": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
-                        "Payload": {
-                        "Input.$": "$",
-                        "TaskToken.$": "$$.Task.Token"
-                        }
-                    },
-                    "Next": "NEXT_STATE"
+        job = json.loads('''
+        {
+            "Type": "Task",
+            "Resource": "arn:${AWS::Partition}:states:::lambda:invoke",
+            "Parameters": {
+                "FunctionName": "${%s}",
+                "Payload": {
+                    "Input.$": "$"
                 }
-            }
-            ''')
+            },
+            "Next": "NEXT_STATE"
+        }
+        ''' % (job_name))
+        if isexists(params,"iscallback") and params["iscallback"]:
+            self.__set_callback(job)
+        if isexists(params,"isend") and params["isend"]:
+            self.__set_end(job)
         else:
-            job["script"] = json.loads('''
-            {
-                "调用 Lambda 函数": {
-                    "Type": "Task",
-                    "Resource": "arn:aws-cn:states:::lambda:invoke",
-                    "Parameters": {
-                        "FunctionName": "arn:aws:lambda:REGION:ACCOUNT_ID:function:FUNCTION_NAME",
-                        "Payload": {
-                        "Input.$": "$"
-                        }
-                    },
-                    "Next": "NEXT_STATE"
-                }
-            }
-            ''')
+            if isexists(params,"nextjob") and params["nextjob"]:
+                job["Next"] = params["nextjob"]
+            else:
+                print("None End Node Must Have A Next Job Node!")
+                sys.exit(2)
         return job
+    
+    def __remove_key(self,job,keyname):
+        if isexists(job,keyname):
+            del job[keyname]
+
+    def __set_end(self,job):
+        job["End"] = True
+        self.__remove_key(job,"Next")
+
+    def __set_callback(self,job):
+        job["Resource"] = "arn:${AWS::Partition}:states:::lambda:invoke.waitForTaskToken"
+        job["Parameters"]["TaskToken.$"] = "$$.Task.Token"
 
     def __map_job(self,job_name="default"):
         #TODO __map_job
