@@ -1,4 +1,4 @@
-digraph "./solution/lambda_job/DAG/lambda_job" {
+digraph "./solution//lambda_job/DAG/lambda_job" {
 	subgraph cluster_stepfunctions_pipeline {
 		node [style=filled]
 		color=blue

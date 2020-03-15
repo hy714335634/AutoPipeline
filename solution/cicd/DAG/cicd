@@ -1,4 +1,4 @@
-digraph "./solution/cicd/DAG/cicd" {
+digraph "./solution//cicd/DAG/cicd" {
 	subgraph cluster_stepfunctions_pipeline {
 		node [style=filled]
 		color=blue

@@ -1,4 +1,4 @@
-digraph "./solution/gatk/DAG/gatk" {
+digraph "./solution//gatk/DAG/gatk" {
 	subgraph cluster_stepfunctions_pipeline {
 		node [style=filled]
 		color=blue

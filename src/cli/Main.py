@@ -41,4 +41,4 @@ def get_argv(argv):
 
 project = get_argv(sys.argv[1:])
 pipeline = Pipeline(project)
-pipeline.start(project['type'])
+# pipeline.start(project['type'])
