@@ -1,0 +1,48 @@
+digraph "./solution/gatk/DAG/gatk" {
+	subgraph cluster_stepfunctions_pipeline {
+		node [style=filled]
+		color=blue
+		label="Stepfunctions pipeline"
+		"数据下载" -> "构建索引" [label=SINGLE]
+		"数据下载" -> "数据质控" [label=SINGLE]
+		"构建索引" -> "BWA比对" [label=SINGLE]
+		"数据质控" -> "" [label=SINGLE]
+		"BWA比对" -> "Markdup去重" [label=SINGLE]
+		"BWA比对" -> "比对质控数据分析" [label=SINGLE]
+		"Markdup去重" -> "GATK变异检出" [label=MAP]
+		"Markdup去重" -> "比对质控数据分析" [label=MAP]
+		"比对质控数据分析" -> "" [label=SINGLE]
+		"GATK变异检出" -> "Annovar注释" [label=MAP]
+		"Annovar注释" -> "数据统计" [label=SINGLE]
+		"Annovar注释" -> "可视化报告生成" [label=SINGLE]
+		"数据统计" -> "邮件发送" [label=SINGLE]
+		"可视化报告生成" -> "邮件发送" [label=SINGLE]
+		"邮件发送" -> "" [label=SINGLE]
+	}
+	subgraph cluster_pre_invoke {
+		color=purple
+		label=INPUT
+		SQS -> Lambda [lhead=cluster_stepfunctions_pipeline]
+		Lambda -> "数据下载" [lhead=cluster_stepfunctions_pipeline]
+		S3 -> SQS [label="prefix:xxxx
+suffix:yyyy"]
+	}
+	subgraph cluster_invoke {
+		edge [color=lightgrey]
+		color=yellow
+		label="invoke job"
+		"Lambda to invoke EC2" -> "EC2 Job"
+		"EC2 Job" -> "Lambda CallBack"
+		"数据下载" -> "Lambda to invoke EC2"
+		"构建索引" -> "Lambda to invoke EC2"
+		"数据质控" -> "Lambda to invoke EC2"
+		"BWA比对" -> "Lambda to invoke EC2"
+		"Markdup去重" -> "Lambda to invoke EC2"
+		"比对质控数据分析" -> "Lambda Job"
+		"GATK变异检出" -> "Lambda to invoke EC2"
+		"Annovar注释" -> "Lambda to invoke EC2"
+		"数据统计" -> "Lambda Job"
+		"可视化报告生成" -> "Lambda Job"
+		"邮件发送" -> "Lambda Job"
+	}
+}

@@ -1,0 +1,22 @@
+digraph "./solution/cicd/DAG/cicd" {
+	subgraph cluster_stepfunctions_pipeline {
+		node [style=filled]
+		color=blue
+		label="Stepfunctions pipeline"
+		"任务信息获取" -> "代码编译" [label=MAP]
+		"代码编译" -> "代码测试及上传" [label=MAP]
+		"代码测试及上传" -> "代码部署" [label=MAP]
+		"代码部署" -> "" [label=MAP]
+	}
+	subgraph cluster_invoke {
+		edge [color=lightgrey]
+		color=yellow
+		label="invoke job"
+		"Lambda to invoke EC2" -> "EC2 Job"
+		"EC2 Job" -> "Lambda CallBack"
+		"任务信息获取" -> "Lambda Job"
+		"代码编译" -> "Lambda to invoke EC2"
+		"代码测试及上传" -> "Lambda to invoke EC2"
+		"代码部署" -> "Lambda Job"
+	}
+}

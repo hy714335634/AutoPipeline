@@ -1,0 +1,22 @@
+digraph "./solution/lambda_job/DAG/lambda_job" {
+	subgraph cluster_stepfunctions_pipeline {
+		node [style=filled]
+		color=blue
+		label="Stepfunctions pipeline"
+		A -> B [label=SINGLE]
+		B -> C [label=SINGLE]
+		C -> "" [label=SINGLE]
+		D -> C [label=SINGLE]
+	}
+	subgraph cluster_invoke {
+		edge [color=lightgrey]
+		color=yellow
+		label="invoke job"
+		"Lambda to invoke EC2" -> "EC2 Job"
+		"EC2 Job" -> "Lambda CallBack"
+		A -> "Lambda Job"
+		B -> "Lambda Job"
+		C -> "Lambda Job"
+		D -> "Lambda Job"
+	}
+}
