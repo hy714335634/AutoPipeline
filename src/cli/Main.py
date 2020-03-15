@@ -1,7 +1,9 @@
+#!/Users/qangz/anaconda3/bin/python
 import getopt
 import sys
 import json
 import os
+# os.chdir(os.path.dirname(os.path.abspath(__file__)))
 import uuid
 from Pipeline import *
 
@@ -37,7 +39,6 @@ def get_argv(argv):
     command['project_id'] = str(uuid.uuid4())
     return command
 
-# if __name__ == "__main__":
 project = get_argv(sys.argv[1:])
 pipeline = Pipeline(project)
 pipeline.start(project['type'])
